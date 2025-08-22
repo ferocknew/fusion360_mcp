@@ -6,7 +6,7 @@
 	"description":	{
 		"":	"Fusion360 LLM 建模助手 - 基于 FastMCP 和 Fusion 360 API 的语义化建模系统"
 	},
-	"version":	"0.1.3",
+	"version":	"0.1.4",
 	"runOnStartup":	false,
 	"supportedOS":	"windows|mac",
 	"editEnabled":	true

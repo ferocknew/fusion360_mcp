@@ -67,6 +67,8 @@ class MCPRequestHandler(BaseHTTPRequestHandler):
                 result = get_fusion_objects()
             elif path == '/api/view':
                 result = get_fusion_view()
+            elif path == '/api/list':
+                result = get_fusion_api_list()
             else:
                 result = {"success": False, "error": f"未知路径: {path}"}
 
@@ -337,6 +339,317 @@ def get_fusion_view():
         }
 
         return view_info
+
+    except Exception as e:
+        return {"success": False, "error": str(e)}
+
+
+def get_fusion_api_list():
+    """获取 Fusion 360 API 功能列表"""
+    try:
+        # 详细的 Fusion 360 API 功能列表
+        api_categories = {
+            "design_apis": {
+                "name": "设计API",
+                "description": "用于创建和编辑3D模型的核心设计功能",
+                "apis": [
+                    {
+                        "name": "sketches",
+                        "chinese_name": "草图",
+                        "description": "创建和编辑2D草图，包括线条、圆弧、圆形、矩形等几何元素",
+                        "common_operations": ["addLine", "addCircle", "addRectangle", "addArc", "addSpline"]
+                    },
+                    {
+                        "name": "features.extrudeFeatures",
+                        "chinese_name": "拉伸特征",
+                        "description": "将2D草图拉伸成3D实体",
+                        "common_operations": ["add", "createInput", "setDistanceExtent", "setToExtent"]
+                    },
+                    {
+                        "name": "features.revolveFeatures",
+                        "chinese_name": "旋转特征",
+                        "description": "围绕轴线旋转2D轮廓创建3D实体",
+                        "common_operations": ["add", "createInput", "setAngleExtent", "setFullExtent"]
+                    },
+                    {
+                        "name": "features.sweepFeatures",
+                        "chinese_name": "扫掠特征",
+                        "description": "沿路径扫掠2D轮廓创建3D实体",
+                        "common_operations": ["add", "createInput", "setPath", "setProfile"]
+                    },
+                    {
+                        "name": "features.loftFeatures",
+                        "chinese_name": "放样特征",
+                        "description": "在多个截面之间创建过渡实体",
+                        "common_operations": ["add", "createInput", "setSectionProfiles"]
+                    },
+                    {
+                        "name": "features.filletFeatures",
+                        "chinese_name": "圆角特征",
+                        "description": "在边缘创建圆角或倒角",
+                        "common_operations": ["add", "createInput", "setConstantRadius", "setVariableRadius"]
+                    },
+                    {
+                        "name": "features.chamferFeatures",
+                        "chinese_name": "倒角特征",
+                        "description": "在边缘创建倒角",
+                        "common_operations": ["add", "createInput", "setDistances", "setEqualDistance"]
+                    },
+                    {
+                        "name": "features.holeFeatures",
+                        "chinese_name": "孔特征",
+                        "description": "创建圆孔、螺纹孔等",
+                        "common_operations": ["add", "createSimpleInput", "createCounterboreInput"]
+                    },
+                    {
+                        "name": "features.patternFeatures",
+                        "chinese_name": "阵列特征",
+                        "description": "创建矩形阵列、圆形阵列等重复特征",
+                        "common_operations": ["rectangularPatternFeatures", "circularPatternFeatures"]
+                    },
+                    {
+                        "name": "features.mirrorFeatures",
+                        "chinese_name": "镜像特征",
+                        "description": "创建镜像特征",
+                        "common_operations": ["add", "createInput", "setMirrorPlane"]
+                    }
+                ]
+            },
+            "modeling_apis": {
+                "name": "建模API",
+                "description": "高级建模和几何操作功能",
+                "apis": [
+                    {
+                        "name": "bRepBodies",
+                        "chinese_name": "实体对象",
+                        "description": "管理3D实体对象",
+                        "common_operations": ["createSphere", "createBox", "createCylinder", "combineFeatures"]
+                    },
+                    {
+                        "name": "constructionPlanes",
+                        "chinese_name": "构造平面",
+                        "description": "创建用于建模的辅助平面",
+                        "common_operations": ["add", "createInput", "setByOffset", "setByAngle"]
+                    },
+                    {
+                        "name": "constructionAxes",
+                        "chinese_name": "构造轴",
+                        "description": "创建用于建模的辅助轴线",
+                        "common_operations": ["add", "createInput", "setByLine", "setByTwoPoints"]
+                    },
+                    {
+                        "name": "joints",
+                        "chinese_name": "装配约束",
+                        "description": "创建装配中的约束关系",
+                        "common_operations": ["rigidJoints", "revoluteJoints", "sliderJoints"]
+                    },
+                    {
+                        "name": "workPlanes",
+                        "chinese_name": "工作平面",
+                        "description": "定义草图和特征的工作平面",
+                        "common_operations": ["createByPoint", "createByOffset", "createByThreePoints"]
+                    }
+                ]
+            },
+            "analysis_apis": {
+                "name": "分析API",
+                "description": "仿真分析和计算功能",
+                "apis": [
+                    {
+                        "name": "studies",
+                        "chinese_name": "分析研究",
+                        "description": "创建和管理仿真分析研究",
+                        "common_operations": ["staticStressStudies", "modalStudies", "thermalStudies"]
+                    },
+                    {
+                        "name": "physicalProperties",
+                        "chinese_name": "物理属性",
+                        "description": "计算体积、重量、重心等物理属性",
+                        "common_operations": ["getPhysicalProperties", "volume", "mass", "centroid"]
+                    },
+                    {
+                        "name": "measureManager",
+                        "chinese_name": "测量管理器",
+                        "description": "测量距离、角度、面积等几何量",
+                        "common_operations": ["measureDistance", "measureAngle", "measureArea"]
+                    }
+                ]
+            },
+            "manufacturing_apis": {
+                "name": "制造API",
+                "description": "CAM加工和制造相关功能",
+                "apis": [
+                    {
+                        "name": "cam.operations",
+                        "chinese_name": "加工操作",
+                        "description": "创建铣削、车削等加工操作",
+                        "common_operations": ["face", "adaptive", "pocket", "drill", "turning"]
+                    },
+                    {
+                        "name": "cam.tools",
+                        "chinese_name": "刀具管理",
+                        "description": "管理和配置加工刀具",
+                        "common_operations": ["flatEndmill", "ballEndmill", "drill", "chamferMill"]
+                    },
+                    {
+                        "name": "cam.setups",
+                        "chinese_name": "加工设置",
+                        "description": "配置工件坐标系和加工设置",
+                        "common_operations": ["createSetup", "setWorkCoordinateSystem", "setStock"]
+                    },
+                    {
+                        "name": "cam.postProcess",
+                        "chinese_name": "后处理",
+                        "description": "生成数控程序代码",
+                        "common_operations": ["generateCode", "executePostProcessor"]
+                    }
+                ]
+            },
+            "rendering_apis": {
+                "name": "渲染API",
+                "description": "可视化渲染和外观设置",
+                "apis": [
+                    {
+                        "name": "appearances",
+                        "chinese_name": "外观",
+                        "description": "设置材质外观和贴图",
+                        "common_operations": ["addAppearance", "setMaterial", "setTexture"]
+                    },
+                    {
+                        "name": "scenes",
+                        "chinese_name": "场景",
+                        "description": "配置渲染场景和环境",
+                        "common_operations": ["addScene", "setEnvironment", "setLighting"]
+                    },
+                    {
+                        "name": "renderManager",
+                        "chinese_name": "渲染管理器",
+                        "description": "执行高质量渲染",
+                        "common_operations": ["render", "setQuality", "setResolution"]
+                    }
+                ]
+            },
+            "data_apis": {
+                "name": "数据API",
+                "description": "文档管理和数据交换功能",
+                "apis": [
+                    {
+                        "name": "documents",
+                        "chinese_name": "文档管理",
+                        "description": "创建、打开、保存文档",
+                        "common_operations": ["add", "open", "save", "saveAs", "close"]
+                    },
+                    {
+                        "name": "exportManager",
+                        "chinese_name": "导出管理器",
+                        "description": "导出各种文件格式",
+                        "common_operations": ["exportSTL", "exportSTEP", "exportIGES", "exportF3D"]
+                    },
+                    {
+                        "name": "importManager",
+                        "chinese_name": "导入管理器",
+                        "description": "导入外部文件格式",
+                        "common_operations": ["importSTEP", "importIGES", "importMesh"]
+                    },
+                    {
+                        "name": "dataFile",
+                        "chinese_name": "数据文件",
+                        "description": "访问云端数据文件",
+                        "common_operations": ["uploadFile", "downloadFile", "getFileInfo"]
+                    }
+                ]
+            },
+            "ui_apis": {
+                "name": "用户界面API",
+                "description": "自定义用户界面和交互",
+                "apis": [
+                    {
+                        "name": "commandDefinitions",
+                        "chinese_name": "命令定义",
+                        "description": "创建自定义命令和按钮",
+                        "common_operations": ["addButtonDefinition", "addDropdownDefinition"]
+                    },
+                    {
+                        "name": "toolbars",
+                        "chinese_name": "工具栏",
+                        "description": "管理工具栏和面板",
+                        "common_operations": ["addToolbar", "addPanel", "addCommand"]
+                    },
+                    {
+                        "name": "palettes",
+                        "chinese_name": "面板",
+                        "description": "创建和管理面板窗口",
+                        "common_operations": ["add", "show", "hide", "dock"]
+                    },
+                    {
+                        "name": "messageBox",
+                        "chinese_name": "消息框",
+                        "description": "显示用户消息和对话框",
+                        "common_operations": ["show", "showDialog", "showInputDialog"]
+                    }
+                ]
+            },
+            "utilities_apis": {
+                "name": "工具API",
+                "description": "实用工具和辅助功能",
+                "apis": [
+                    {
+                        "name": "timeline",
+                        "chinese_name": "时间线",
+                        "description": "管理设计历史时间线",
+                        "common_operations": ["rollTo", "capture", "restore"]
+                    },
+                    {
+                        "name": "selections",
+                        "chinese_name": "选择",
+                        "description": "管理对象选择",
+                        "common_operations": ["selectEntity", "clearSelection", "addToSelection"]
+                    },
+                    {
+                        "name": "activeViewport",
+                        "chinese_name": "活动视口",
+                        "description": "控制3D视图显示",
+                        "common_operations": ["camera", "fit", "saveAsImageFile", "refresh"]
+                    },
+                    {
+                        "name": "progressDialog",
+                        "chinese_name": "进度对话框",
+                        "description": "显示操作进度",
+                        "common_operations": ["show", "hide", "setProgress", "setMessage"]
+                    }
+                ]
+            }
+        }
+
+        # 获取当前可用的API统计
+        api_stats = {
+            "total_categories": len(api_categories),
+            "total_apis": sum(len(category["apis"]) for category in api_categories.values()),
+            "fusion_version": app.version if app else "Unknown"
+        }
+
+        result = {
+            "success": True,
+            "message": "Fusion 360 API 功能列表",
+            "statistics": api_stats,
+            "categories": api_categories,
+            "usage_notes": [
+                "此列表包含了 Fusion 360 的主要 API 功能分类",
+                "每个API都包含中文名称和详细说明",
+                "common_operations 列出了常用的操作方法",
+                "实际使用时需要通过 adsk.core 和 adsk.fusion 模块访问这些API",
+                "某些功能可能需要特定的 Fusion 360 许可证级别"
+            ],
+            "examples": {
+                "创建圆柱体": "使用 sketches 创建圆形，然后用 extrudeFeatures 拉伸",
+                "装配约束": "使用 joints 创建零件之间的装配关系",
+                "材质渲染": "使用 appearances 设置材质，用 renderManager 执行渲染",
+                "导出文件": "使用 exportManager 导出为STL、STEP等格式"
+            }
+        }
+
+        log_message(f"API列表查询完成，共 {api_stats['total_apis']} 个API")
+        return result
 
     except Exception as e:
         return {"success": False, "error": str(e)}
