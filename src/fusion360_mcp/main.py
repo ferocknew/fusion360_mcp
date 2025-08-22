@@ -33,21 +33,21 @@ def create_argument_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description="Fusion360 MCP 服务器 - 基于 FastMCP 和 Fusion 360 API 的语义化建模系统"
     )
-    
+
     parser.add_argument(
         "--host",
         type=str,
         default="localhost",
         help="服务器绑定的主机地址 (默认: localhost)"
     )
-    
+
     parser.add_argument(
         "--port",
         type=int,
         default=8000,
         help="服务器绑定的端口号 (默认: 8000)"
     )
-    
+
     parser.add_argument(
         "--log-level",
         type=str,
@@ -55,25 +55,25 @@ def create_argument_parser() -> argparse.ArgumentParser:
         default="INFO",
         help="日志级别 (默认: INFO)"
     )
-    
+
     parser.add_argument(
         "--reload",
         action="store_true",
         help="启用自动重载 (开发模式)"
     )
-    
+
     parser.add_argument(
         "--version",
         action="version",
         version=f"fusion360-mcp 0.1.0"
     )
-    
+
     parser.add_argument(
         "--help-tools",
         action="store_true",
         help="显示可用的 Fusion 360 工具列表"
     )
-    
+
     return parser
 
 
@@ -86,10 +86,10 @@ async def start_server(
     """启动 MCP 服务器"""
     setup_logging(log_level)
     logger = logging.getLogger(__name__)
-    
+
     logger.info(f"启动 Fusion360 MCP 服务器在 {host}:{port}")
     logger.info(f"日志级别: {log_level}")
-    
+
     # 配置 uvicorn
     config = uvicorn.Config(
         app=app,
@@ -99,9 +99,9 @@ async def start_server(
         reload=reload,
         access_log=True,
     )
-    
+
     server = uvicorn.Server(config)
-    
+
     try:
         await server.serve()
     except KeyboardInterrupt:
@@ -115,7 +115,12 @@ def main() -> None:
     """主入口函数"""
     parser = create_argument_parser()
     args = parser.parse_args()
-    
+
+    # 处理工具帮助
+    if args.help_tools:
+        show_full_help()
+        return
+
     try:
         asyncio.run(start_server(
             host=args.host,

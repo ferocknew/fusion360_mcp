@@ -45,6 +45,8 @@ dev = [
 
 [project.scripts]
 fusion360_mcp = "fusion360_mcp.main:main"
+fusion360_mcp_test = "tests.run_tests:main"
+fusion360_mcp_quick_test = "tests.quick_test:main"
 
 [project.urls]
 Homepage = "https://github.com/yourusername/fusion360_mcp"
