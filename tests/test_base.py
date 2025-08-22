@@ -45,15 +45,14 @@ class Fusion360TestBase(AsyncTestCase):
 
     def setUp(self):
         super().setUp()
-        self.fusion360_url = "http://localhost:9000"  # Fusion 360 插件服务地址
-        self.mcp_server_url = "http://localhost:8000"  # MCP 服务器地址
+        self.fusion360_url = "http://localhost:9000"  # Fusion 360 插件HTTP服务地址
         self.test_results = []
-
-        # 创建 MCPClient 实例，用于与 Fusion 360 插件通信
-        self.mcp_client = MCPClient(self.mcp_server_url)
 
         # 直接使用 src 中的工具模块
         self.tools = tools
+
+        # 注意：MCP 服务器本身没有端口，它是被动被调用的
+        # 我们只需要测试工具模块是否能正确调用 Fusion 360 插件
 
     def get_mcp_client(self) -> MCPClient:
         """获取 MCP 客户端"""
@@ -90,23 +89,15 @@ class Fusion360TestBase(AsyncTestCase):
             "result": result
         })
 
-    def check_fusion360_connection(self) -> bool:
-        """检查 Fusion 360 插件连接"""
+        async def check_fusion360_connection(self) -> bool:
+        """检查 Fusion 360 插件HTTP服务连接"""
         try:
-            # 使用 MCPClient 检查连接
-            return self.mcp_client.ping()
+            # 直接检查 Fusion 360 插件的 HTTP 服务
+            api = self.tools.get_api()
+            response = await api._request("GET", "/api/health")
+            return response.get("status") == "healthy"
         except Exception as e:
-            logger.warning(f"Fusion 360 连接检查失败: {e}")
-            return False
-
-    def check_mcp_server_connection(self) -> bool:
-        """检查 MCP 服务器连接"""
-        try:
-            # 获取服务器信息来验证连接
-            server_info = self.mcp_client.get_server_info()
-            return server_info is not None
-        except Exception as e:
-            logger.warning(f"MCP 服务器连接检查失败: {e}")
+            logger.warning(f"Fusion 360 插件连接检查失败: {e}")
             return False
 
     async def call_fusion360_api(self, method: str, endpoint: str, data: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:

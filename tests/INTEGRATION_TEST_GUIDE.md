@@ -46,7 +46,17 @@ fusion360_mcp --port 8000
 
 ### 3. 验证连接
 
+⚠️ **重要端口说明**
+- **MCP 服务器**: 端口 8000 (可配置)
+- **Fusion 360 插件**: 端口 9000 (固定，不可更改)
+
+**请确保端口 9000 没有被其他应用占用！**
+
 ```bash
+# 检查端口是否被占用
+lsof -i :8000  # MCP 服务器端口
+lsof -i :9000  # Fusion 360 插件端口
+
 # 检查 Fusion 360 插件
 curl http://localhost:9000/api/health
 
@@ -203,10 +213,15 @@ curl -X GET http://localhost:8000/health
 
 ### Q: 测试总是失败，提示连接错误
 A:
-1. 确认 Fusion 360 插件已启动
-2. 确认 MCP 服务器已启动
-3. 检查防火墙设置
-4. 验证端口未被占用
+1. **检查端口占用**:
+   ```bash
+   lsof -i :8000  # MCP 服务器
+   lsof -i :9000  # Fusion 360 插件
+   ```
+2. 确认 Fusion 360 插件已启动 (`curl http://localhost:9000/api/health`)
+3. 确认 MCP 服务器已启动 (`curl http://localhost:8000/health`)
+4. 检查防火墙设置
+5. 如端口 9000 被占用，需要释放该端口（插件端口不可更改）
 
 ### Q: 某些测试通过，某些失败
 A:

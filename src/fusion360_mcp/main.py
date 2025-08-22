@@ -35,31 +35,11 @@ def create_argument_parser() -> argparse.ArgumentParser:
     )
 
     parser.add_argument(
-        "--host",
-        type=str,
-        default="localhost",
-        help="服务器绑定的主机地址 (默认: localhost)"
-    )
-
-    parser.add_argument(
-        "--port",
-        type=int,
-        default=8000,
-        help="服务器绑定的端口号 (默认: 8000)"
-    )
-
-    parser.add_argument(
         "--log-level",
         type=str,
         choices=["DEBUG", "INFO", "WARNING", "ERROR"],
         default="INFO",
         help="日志级别 (默认: INFO)"
-    )
-
-    parser.add_argument(
-        "--reload",
-        action="store_true",
-        help="启用自动重载 (开发模式)"
     )
 
     parser.add_argument(
@@ -77,37 +57,21 @@ def create_argument_parser() -> argparse.ArgumentParser:
     return parser
 
 
-async def start_server(
-    host: str = "localhost",
-    port: int = 8000,
-    log_level: str = "INFO",
-    reload: bool = False
-) -> None:
-    """启动 MCP 服务器"""
-    setup_logging(log_level)
+async def run_mcp_server() -> None:
+    """运行 MCP 服务器"""
+    setup_logging("INFO")
     logger = logging.getLogger(__name__)
 
-    logger.info(f"启动 Fusion360 MCP 服务器在 {host}:{port}")
-    logger.info(f"日志级别: {log_level}")
-
-    # 配置 uvicorn
-    config = uvicorn.Config(
-        app=app,
-        host=host,
-        port=port,
-        log_level=log_level.lower(),
-        reload=reload,
-        access_log=True,
-    )
-
-    server = uvicorn.Server(config)
+    logger.info("启动 Fusion360 MCP 服务器 (FastMCP)")
 
     try:
-        await server.serve()
+        # FastMCP 服务器通过 stdio 运行，不需要端口
+        # 这里应该调用 FastMCP 的运行方法
+        await app.run()
     except KeyboardInterrupt:
-        logger.info("收到中断信号，正在关闭服务器...")
+        logger.info("收到中断信号，正在关闭 MCP 服务器...")
     except Exception as e:
-        logger.error(f"服务器启动失败: {e}")
+        logger.error(f"MCP 服务器运行失败: {e}")
         sys.exit(1)
 
 
@@ -122,12 +86,8 @@ def main() -> None:
         return
 
     try:
-        asyncio.run(start_server(
-            host=args.host,
-            port=args.port,
-            log_level=args.log_level,
-            reload=args.reload,
-        ))
+        # MCP 服务器不需要 host/port 参数，通过 stdio 通信
+        asyncio.run(run_mcp_server())
     except KeyboardInterrupt:
         print("\n程序被用户中断")
         sys.exit(0)

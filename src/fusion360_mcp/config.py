@@ -4,10 +4,10 @@
 
 import os
 from typing import Optional
-from pydantic import BaseSettings, Field
+from pydantic import BaseModel, Field
 
 
-class Settings(BaseSettings):
+class Settings(BaseModel):
     """应用配置"""
 
     # 服务器配置
@@ -27,10 +27,11 @@ class Settings(BaseSettings):
     cors_origins: list[str] = Field(default=["*"], description="CORS 允许的源")
     max_request_size: int = Field(default=10 * 1024 * 1024, description="最大请求大小（字节）")
 
-    class Config:
-        env_file = ".env"
-        env_file_encoding = "utf-8"
-        case_sensitive = False
+    model_config = {
+        "env_file": ".env",
+        "env_file_encoding": "utf-8",
+        "case_sensitive": False
+    }
 
 
 # 全局设置实例

@@ -5,17 +5,31 @@
 ## 系统架构
 
 ```
-┌─────────────────┐    natural    ┌──────────────────────┐
-│   User (LLM)    │◄──────────────┤  Natural Language    │
-└─────────┬───────┘   language    └──────────────────────┘
-          │
-          │ API Calls
-          ▼
-┌─────────────────┐    Fusion360  ┌──────────────────────┐
-│   MCP Server    │◄──────────────┤  Fusion 360 Add-in   │
-│  (FastMCP)      │    API Calls  │                      │
-└─────────────────┘               └──────────────────────┘
+┌─────────────────┐   JSON-RPC      ┌──────────────────────┐    HTTP API    ┌──────────────────────┐
+│   LLM客户端     │◄─────────────►│   MCP 服务器         │──────────────►│  Fusion 360 插件     │
+│  (Claude等)     │  (stdio/SSE)   │  (FastMCP)          │   (内部调用)   │  (HTTP服务器)        │
+│                 │                │  本项目核心         │               │  端口: 9000          │
+└─────────────────┘                └──────────────────────┘               └──────────────────────┘
+                                             │                                           │
+                                             │ 注册工具                                   │
+                                             ▼                                           ▼
+                                  ┌──────────────────────┐                   ┌──────────────────────┐
+                                  │   工具函数            │                   │    Fusion 360        │
+                                  │ @app.tool()         │                   │      软件            │
+                                  │ create_document()   │                   │   (本地 API)         │
+                                  │ create_object()     │                   │                      │
+                                  └──────────────────────┘                   └──────────────────────┘
 ```
+
+**正确的协议层次：**
+1. **LLM ↔ MCP服务器**: JSON-RPC over stdio/SSE (MCP协议)
+2. **MCP服务器 ↔ Fusion360插件**: HTTP API (内部实现)
+3. **Fusion360插件 ↔ Fusion360软件**: Python API (本地调用)
+
+**关键修正：**
+- MCP服务器通过 FastMCP 提供 JSON-RPC 接口，不是 HTTP 服务器
+- LLM客户端通过 MCP 协议调用，不是 HTTP 请求
+- MCPClient 应该被移除，因为不需要客户端请求 MCP 服务器
 
 ## 功能特点
 
@@ -47,10 +61,28 @@ uvx --from fusion360-mcp fusion360_mcp --help
 
 ### 4. Fusion 360 插件安装
 
+#### 重要端口说明
+- **MCP 服务器**: 无端口，被动被调用 (通过 stdio 或 MCP 协议)
+- **Fusion 360 插件HTTP服务端口**: `9000` (固定) - 接收工具模块的HTTP请求
+
+⚠️ **请确保端口 9000 没有被其他应用占用**，这是 Fusion 360 插件内置HTTP服务器的专用端口。
+
+#### 安装步骤
 1. 打开 Fusion 360
 2. 进入 `工具` > `附加模块` > `开发`
-3. 安装 `addin/` 目录中的插件
-4. 配置插件连接 MCP 服务器地址
+3. 点击 "+" 按钮添加插件
+4. 选择 `addin/fusion360_mcp_addin/` 文件夹（包含 .py 和 .manifest 文件）
+5. 勾选插件以启动
+6. 插件启动后会显示确认消息，服务地址为: `http://localhost:9000`
+
+#### 验证插件运行
+```bash
+# 检查插件是否正常运行
+curl http://localhost:9000/api/health
+
+# 预期响应
+{"status": "healthy", "message": "Fusion 360 插件运行正常"}
+```
 
 ### 5. LLM 配置
 
@@ -81,10 +113,56 @@ MCP_SERVER_URL=http://localhost:8000
 
 ### 基本工作流程
 
-1. 启动 MCP 服务器
-2. 在 Fusion 360 中启用插件
-3. 使用自然语言描述建模需求
-4. 系统自动转换并执行建模操作
+1. **安装项目**
+   ```bash
+   # 安装项目
+   pip install -e .
+   ```
+
+2. **启动 Fusion 360 并加载插件**
+   - 确保插件正在端口 9000 运行
+   - 验证: `curl http://localhost:9000/api/health`
+
+3. **配置 LLM 客户端 (Claude)**
+   ```json
+   {
+     "mcpServers": {
+       "fusion360": {
+         "command": "fusion360_mcp",
+         "args": []
+       }
+     }
+   }
+   ```
+
+4. **测试工具模块 (开发用)**
+   ```bash
+   # 快速测试工具函数
+   python tests/test_simple_integration.py
+   ```
+
+5. **使用方式**
+   - LLM 客户端通过 MCP 协议调用我们的服务器
+   - MCP 服务器内部调用 Fusion 360 插件完成建模
+   - 无需手动启动 MCP 服务器 (由 LLM 客户端调用)
+
+### 端口占用检查
+
+如果遇到端口冲突，可以检查端口使用情况：
+
+```bash
+# 检查端口 9000 (Fusion 360 插件HTTP服务)
+netstat -an | grep 9000
+lsof -i :9000
+
+# 使用项目提供的端口检查脚本
+python scripts/check_ports.py
+```
+
+**注意：**
+- MCP 服务器本身没有端口，是被动被调用的
+- 只有 Fusion 360 插件需要端口 9000
+- 如端口被占用，需要释放该端口
 
 ### 示例命令
 
@@ -135,10 +213,33 @@ MCP_SERVER_URL=http://localhost:8000
 
 ## 注意事项
 
+### 端口管理
+- **端口 8000**: MCP 服务器端口（可配置）- 提供MCP协议服务，供LLM客户端连接
+- **端口 9000**: Fusion 360 插件HTTP服务端口（固定）- 插件内置的HTTP服务器，接收MCP服务器请求
+- 启动前请确保这两个端口未被其他应用占用
+
+### 通信流程
+1. **LLM客户端** ↔ **MCP服务器** (端口8000，MCP协议)
+2. **MCP服务器** ↔ **Fusion 360插件HTTP服务** (端口9000，HTTP协议)
+3. **Fusion 360插件** ↔ **Fusion 360软件** (本地API调用)
+
+### 连接要求
+- MCP 服务器与 Fusion 360 插件必须在同一台机器上运行
+- 两个服务都使用 localhost 地址，确保防火墙不阻止本地连接
+- 插件启动后会在 Fusion 360 中显示确认消息
+
+### 开发环境
 - 确保 Fusion 360 已正确配置开发环境
-- MCP 服务器需要与 Fusion 360 插件保持网络连接
+- 插件需要在 Fusion 360 的开发模式下运行
 - 某些复杂建模操作可能需要手动调整
 - 建议在测试环境中验证所有操作
+
+### 故障排除
+如果遇到连接问题：
+1. 检查端口是否被占用: `lsof -i :8000` 和 `lsof -i :9000`
+2. 确认 MCP 服务器正在运行: `curl http://localhost:8000/health`
+3. 确认 Fusion 360 插件已启动: `curl http://localhost:9000/api/health`
+4. 查看 Fusion 360 开发控制台的错误信息
 
 ## 相关文档
 - Fusion 360 api ： https://help.autodesk.com/view/fusion360/ENU/?guid=GUID-A92A4B10-3781-4925-94C6-47DA85A4F65A

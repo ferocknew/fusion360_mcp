@@ -176,38 +176,6 @@ async def get_parts_list() -> Dict[str, Any]:
         return {"success": False, "error": str(e)}
 
 
-# 添加服务器信息
-@app.get("/")
-async def root():
-    """根路径信息"""
-    settings = get_settings()
-    return {
-        "name": settings.mcp_server_name,
-        "version": settings.mcp_server_version,
-        "description": "Fusion360 LLM 建模助手 - 基于 FastMCP 和 Fusion 360 API 的语义化建模系统",
-        "tools_count": len(app.list_tools()),
-        "status": "running"
-    }
-
-
-@app.get("/health")
-async def health_check():
-    """健康检查端点"""
-    return {"status": "healthy", "message": "服务器运行正常"}
-
-
-# 启动时的日志
-@app.on_event("startup")
-async def startup_event():
-    """启动事件"""
-    settings = get_settings()
-    logger.info(f"Fusion360 MCP 服务器启动完成")
-    logger.info(f"服务器名称: {settings.mcp_server_name}")
-    logger.info(f"服务器版本: {settings.mcp_server_version}")
-    logger.info(f"已注册工具数量: {len(app.list_tools())}")
-
-
-@app.on_event("shutdown")
-async def shutdown_event():
-    """关闭事件"""
-    logger.info("Fusion360 MCP 服务器正在关闭...")
+# FastMCP 服务器初始化完成
+# 所有工具已通过 @app.tool() 装饰器注册
+logger.info("Fusion360 MCP 服务器配置完成")
