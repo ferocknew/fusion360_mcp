@@ -1,0 +1,70 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "fusion360-mcp"
+version = "0.1.0"
+description = "一个基于 FastMCP 和 Fusion 360 API 的语义化建模系统"
+readme = "README.md"
+license = "MIT"
+authors = [
+    { name = "Fusion360 MCP Team" },
+]
+dependencies = [
+    "fastmcp>=0.2.0",
+    "uvicorn>=0.25.0",
+    "fastapi>=0.104.0",
+    "pydantic>=2.5.0",
+    "httpx>=0.25.0",
+    "python-multipart>=0.0.6",
+]
+requires-python = ">=3.11"
+keywords = ["fusion360", "mcp", "3d-modeling", "llm", "api"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: Scientific/Engineering :: Interface Engine/Protocol Translator",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.4.0",
+    "pytest-asyncio>=0.21.0",
+    "black>=23.0.0",
+    "isort>=5.12.0",
+    "mypy>=1.6.0",
+    "pre-commit>=3.5.0",
+]
+
+[project.scripts]
+fusion360_mcp = "fusion360_mcp.main:main"
+
+[project.urls]
+Homepage = "https://github.com/yourusername/fusion360_mcp"
+Documentation = "https://github.com/yourusername/fusion360_mcp#readme"
+Repository = "https://github.com/yourusername/fusion360_mcp.git"
+Issues = "https://github.com/yourusername/fusion360_mcp/issues"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/fusion360_mcp"]
+
+[tool.black]
+line-length = 88
+target-version = ["py311"]
+
+[tool.isort]
+profile = "black"
+line_length = 88
+
+[tool.mypy]
+python_version = "3.11"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
