@@ -26,7 +26,7 @@ from .tools import (
 __all__ = [
     "app",
     "create_document",
-    "create_object", 
+    "create_object",
     "edit_object",
     "delete_object",
     "execute_code",

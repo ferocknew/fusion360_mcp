@@ -20,7 +20,7 @@ def print_tools_help():
     """打印工具帮助信息"""
     print("🔧 可用的 Fusion 360 工具")
     print("=" * 50)
-    
+
     tools = [
         {
             "name": "create_document",
@@ -44,7 +44,7 @@ def print_tools_help():
             "example": 'create_object("extrude", {"base_feature": "circle", "radius": 25, "height": 50})'
         },
         {
-            "name": "edit_object", 
+            "name": "edit_object",
             "description": "在 Fusion 360 中编辑对象",
             "parameters": [
                 {"name": "object_id", "type": "str", "description": "对象ID", "optional": False},
@@ -54,7 +54,7 @@ def print_tools_help():
         },
         {
             "name": "delete_object",
-            "description": "在 Fusion 360 中删除对象", 
+            "description": "在 Fusion 360 中删除对象",
             "parameters": [
                 {"name": "object_id", "type": "str", "description": "对象ID", "optional": False}
             ],
@@ -112,11 +112,11 @@ def print_tools_help():
             "example": 'get_parts_list()'
         }
     ]
-    
+
     for tool in tools:
         print(f"\n🔹 {tool['name']}")
         print(f"   描述: {tool['description']}")
-        
+
         if tool['parameters']:
             print("   参数:")
             for param in tool['parameters']:
@@ -125,9 +125,9 @@ def print_tools_help():
                 print(f"     - {param['name']} ({param['type']}){optional_text}: {param['description']}{default_text}")
         else:
             print("   参数: 无")
-        
+
         print(f"   示例: {tool['example']}")
-    
+
     print("\n" + "=" * 50)
 
 
@@ -135,7 +135,7 @@ def print_basic_shapes_help():
     """打印基本几何体帮助"""
     print("\n🔸 基本几何体快捷创建")
     print("-" * 30)
-    
+
     shapes = [
         {
             "name": "圆柱体 (cylinder)",
@@ -153,12 +153,12 @@ def print_basic_shapes_help():
             "example": 'create_primitive("sphere", radius=20.0)'
         },
         {
-            "name": "圆锥体 (cone)", 
+            "name": "圆锥体 (cone)",
             "parameters": ["base_radius (底面半径)", "top_radius (顶面半径)", "height (高度)"],
             "example": 'create_primitive("cone", base_radius=30.0, top_radius=10.0, height=40.0)'
         }
     ]
-    
+
     for shape in shapes:
         print(f"\n  📐 {shape['name']}")
         print(f"     参数: {', '.join(shape['parameters'])}")
@@ -169,21 +169,21 @@ def print_usage_examples():
     """打印使用示例"""
     print("\n📚 使用示例")
     print("=" * 50)
-    
+
     print("\n🚀 启动服务器:")
     print("   uvx --from fusion360-mcp fusion360_mcp")
     print("   或者:")
     print("   fusion360_mcp --host localhost --port 8000")
-    
+
     print("\n🔧 查看工具帮助:")
     print("   fusion360_mcp --help-tools")
-    
+
     print("\n📝 基本建模流程:")
     print("   1. 启动 Fusion 360")
     print("   2. 安装并启用 MCP 插件")
     print("   3. 启动 MCP 服务器")
     print("   4. 通过 LLM 或脚本调用 MCP 工具")
-    
+
     print("\n🌐 API 端点:")
     print("   健康检查: GET http://localhost:8000/health")
     print("   服务器信息: GET http://localhost:8000/")
@@ -209,7 +209,7 @@ def show_full_help():
     print_basic_shapes_help()
     print_usage_examples()
     print_system_requirements()
-    
+
     print("\n💡 提示:")
     print("• 使用前请确保 Fusion 360 已启动并加载 MCP 插件")
     print("• 查看更多文档: https://github.com/yourusername/fusion360_mcp")
@@ -219,13 +219,13 @@ def show_full_help():
 def show_quick_help():
     """显示快速帮助"""
     print_version_info()
-    
+
     print("🔧 常用命令:")
     print("  fusion360_mcp                    # 启动服务器")
     print("  fusion360_mcp --help-tools       # 显示工具列表")
     print("  fusion360_mcp --port 9000        # 指定端口启动")
     print("  fusion360_mcp --version          # 显示版本")
-    
+
     print("\n📖 获取完整帮助: fusion360_mcp --help-tools")
 
 
