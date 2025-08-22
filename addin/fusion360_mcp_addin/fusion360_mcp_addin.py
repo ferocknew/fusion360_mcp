@@ -125,22 +125,46 @@ def get_fusion_status():
         if not app:
             return {"success": False, "error": "应用未初始化"}
 
+        # 安全地获取应用信息
+        app_name = "Fusion 360"
+        version = "Unknown"
+
+        try:
+            # 尝试不同的属性名
+            if hasattr(app, 'productName'):
+                app_name = app.productName
+            elif hasattr(app, 'name'):
+                app_name = app.name
+            elif hasattr(app, 'appName'):
+                app_name = app.appName
+        except:
+            app_name = "Fusion 360"  # 默认值
+
+        try:
+            if hasattr(app, 'version'):
+                version = app.version
+        except:
+            version = "Unknown"
+
         status = {
             "success": True,
-            "app_name": app.productName,
-            "version": app.version,
+            "app_name": app_name,
+            "version": version,
             "active_document": None,
             "design_workspace": False
         }
 
         # 检查活动文档
-        if app.activeDocument:
-            status["active_document"] = app.activeDocument.name
+        try:
+            if app.activeDocument:
+                status["active_document"] = app.activeDocument.name
 
-            # 检查是否在设计工作空间
-            if app.activeProduct:
-                design = adsk.fusion.Design.cast(app.activeProduct)
-                status["design_workspace"] = design is not None
+                # 检查是否在设计工作空间
+                if app.activeProduct:
+                    design = adsk.fusion.Design.cast(app.activeProduct)
+                    status["design_workspace"] = design is not None
+        except Exception as doc_error:
+            log_message(f"获取文档信息失败: {str(doc_error)}")
 
         return status
 
