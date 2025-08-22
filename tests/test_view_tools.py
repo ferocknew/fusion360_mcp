@@ -4,7 +4,7 @@
 
 import unittest
 from unittest.mock import patch, AsyncMock
-from .test_base import Fusion360TestBase, MockFusion360API
+from test_base import Fusion360TestBase, MockFusion360API
 
 
 class TestViewTools(Fusion360TestBase):

@@ -2,34 +2,11 @@
 
 一个基于 FastMCP 和 Fusion 360 API 的语义化建模系统，让大语言模型可以通过自然语言进行 3D 建模操作。
 
-## 系统架构
-
-```
-┌─────────────────┐   JSON-RPC      ┌──────────────────────┐    HTTP API    ┌──────────────────────┐
-│   LLM客户端     │◄─────────────►│   MCP 服务器         │──────────────►│  Fusion 360 插件     │
-│  (Claude等)     │  (stdio/SSE)   │  (FastMCP)          │   (内部调用)   │  (HTTP服务器)        │
-│                 │                │  本项目核心         │               │  端口: 9000          │
-└─────────────────┘                └──────────────────────┘               └──────────────────────┘
-                                             │                                           │
-                                             │ 注册工具                                   │
-                                             ▼                                           ▼
-                                  ┌──────────────────────┐                   ┌──────────────────────┐
-                                  │   工具函数            │                   │    Fusion 360        │
-                                  │ @app.tool()         │                   │      软件            │
-                                  │ create_document()   │                   │   (本地 API)         │
-                                  │ create_object()     │                   │                      │
-                                  └──────────────────────┘                   └──────────────────────┘
-```
 
 **正确的协议层次：**
 1. **LLM ↔ MCP服务器**: JSON-RPC over stdio/SSE (MCP协议)
 2. **MCP服务器 ↔ Fusion360插件**: HTTP API (内部实现)
 3. **Fusion360插件 ↔ Fusion360软件**: Python API (本地调用)
-
-**关键修正：**
-- MCP服务器通过 FastMCP 提供 JSON-RPC 接口，不是 HTTP 服务器
-- LLM客户端通过 MCP 协议调用，不是 HTTP 请求
-- MCPClient 应该被移除，因为不需要客户端请求 MCP 服务器
 
 ## 功能特点
 
@@ -128,8 +105,8 @@ MCP_SERVER_URL=http://localhost:8000
    {
      "mcpServers": {
        "fusion360": {
-         "command": "fusion360_mcp",
-         "args": []
+         "command": "uvx",
+         "args": ["fusion360-mcp"]
        }
      }
    }

@@ -44,7 +44,7 @@ class TestSingleOperations(unittest.TestCase):
     def test_01_fusion360_connection(self):
         """测试 1: Fusion 360 插件连接"""
         print("\n🔍 测试 Fusion 360 插件连接...")
-        
+
         async def test_connection():
             api = tools.Fusion360API()
             try:
@@ -58,14 +58,14 @@ class TestSingleOperations(unittest.TestCase):
                 return False
             finally:
                 await api.close()
-        
+
         success = self.async_test(test_connection())
         self.assertTrue(success, "Fusion 360 插件连接失败")
 
     def test_02_create_single_document(self):
         """测试 2: 创建单个文档"""
         print("\n📄 测试创建单个文档...")
-        
+
         async def test_document():
             try:
                 result = await tools.create_document(name="测试文档_单个", units="mm")
@@ -76,14 +76,14 @@ class TestSingleOperations(unittest.TestCase):
             except Exception as e:
                 print(f"❌ 文档创建失败: {e}")
                 return False
-        
+
         success = self.async_test(test_document())
         self.assertTrue(success, "文档创建测试失败")
 
     def test_03_create_single_box(self):
         """测试 3: 创建单个盒子"""
         print("\n📦 测试创建单个盒子...")
-        
+
         async def test_box():
             try:
                 result = await tools.create_object(
@@ -102,14 +102,14 @@ class TestSingleOperations(unittest.TestCase):
             except Exception as e:
                 print(f"❌ 盒子创建失败: {e}")
                 return False
-        
+
         success = self.async_test(test_box())
         self.assertTrue(success, "盒子创建测试失败")
 
     def test_04_get_objects_list(self):
         """测试 4: 获取对象列表"""
         print("\n📋 测试获取对象列表...")
-        
+
         async def test_objects():
             try:
                 result = await tools.get_objects()  # 正确的函数名
@@ -125,18 +125,18 @@ class TestSingleOperations(unittest.TestCase):
             except Exception as e:
                 print(f"❌ 获取对象列表失败: {e}")
                 return False
-        
+
         success = self.async_test(test_objects())
         self.assertTrue(success, "获取对象列表测试失败")
 
     def test_05_create_single_cylinder(self):
         """测试 5: 创建单个圆柱体"""
         print("\n🔵 测试创建单个圆柱体...")
-        
+
         async def test_cylinder():
             try:
                 result = await tools.create_object(
-                    object_type="cylinder", 
+                    object_type="cylinder",
                     parameters={
                         "radius": 15.0,
                         "height": 30.0
@@ -150,7 +150,7 @@ class TestSingleOperations(unittest.TestCase):
             except Exception as e:
                 print(f"❌ 圆柱体创建失败: {e}")
                 return False
-        
+
         success = self.async_test(test_cylinder())
         self.assertTrue(success, "圆柱体创建测试失败")
 

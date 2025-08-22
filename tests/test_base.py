@@ -16,7 +16,7 @@ sys.path.insert(0, project_root)
 
 # 导入真实的代码
 from src.fusion360_mcp import tools
-from addin.client import MCPClient
+# from addin.client import MCPClient  # 已删除，不再需要
 
 # 设置测试日志
 logging.basicConfig(level=logging.INFO)
@@ -41,7 +41,7 @@ class AsyncTestCase(unittest.TestCase):
 
 
 class Fusion360TestBase(AsyncTestCase):
-    """Fusion 360 测试基类 - 使用真实的 src 代码和 MCPClient"""
+    """Fusion 360 测试基类 - 使用真实的 src 代码"""
 
     def setUp(self):
         super().setUp()
@@ -54,9 +54,7 @@ class Fusion360TestBase(AsyncTestCase):
         # 注意：MCP 服务器本身没有端口，它是被动被调用的
         # 我们只需要测试工具模块是否能正确调用 Fusion 360 插件
 
-    def get_mcp_client(self) -> MCPClient:
-        """获取 MCP 客户端"""
-        return self.mcp_client
+    # MCPClient 已删除，不再需要
 
     def create_mock_api_response(self, success: bool = True, data: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
         """创建模拟 API 响应"""
@@ -89,7 +87,7 @@ class Fusion360TestBase(AsyncTestCase):
             "result": result
         })
 
-        async def check_fusion360_connection(self) -> bool:
+    async def check_fusion360_connection(self) -> bool:
         """检查 Fusion 360 插件HTTP服务连接"""
         try:
             # 直接检查 Fusion 360 插件的 HTTP 服务
@@ -188,60 +186,7 @@ class Fusion360TestBase(AsyncTestCase):
             logger.error(f"调用真实工具 {tool_name} 失败: {e}")
             return {"success": False, "error": str(e)}
 
-    def call_mcp_client_method(self, method_name: str, **kwargs) -> Dict[str, Any]:
-        """调用 MCPClient 的方法"""
-        try:
-            if method_name == "create_document":
-                return self.mcp_client.create_document(
-                    name=kwargs.get("name"),
-                    template=kwargs.get("template"),
-                    units=kwargs.get("units", "mm")
-                )
-            elif method_name == "create_object":
-                return self.mcp_client.create_object(
-                    object_type=kwargs.get("object_type"),
-                    parameters=kwargs.get("parameters", {}),
-                    position=kwargs.get("position"),
-                    rotation=kwargs.get("rotation")
-                )
-            elif method_name == "edit_object":
-                return self.mcp_client.edit_object(
-                    kwargs.get("object_id"),
-                    kwargs.get("parameters", {})
-                )
-            elif method_name == "delete_object":
-                return self.mcp_client.delete_object(kwargs.get("object_id"))
-            elif method_name == "execute_code":
-                return self.mcp_client.execute_code(
-                    kwargs.get("code"),
-                    kwargs.get("context")
-                )
-            elif method_name == "insert_part_from_library":
-                return self.mcp_client.insert_part_from_library(
-                    kwargs.get("library_name"),
-                    kwargs.get("part_name"),
-                    kwargs.get("position")
-                )
-            elif method_name == "get_view":
-                return self.mcp_client.get_view(
-                    camera_position=kwargs.get("camera_position"),
-                    target_position=kwargs.get("target_position"),
-                    format=kwargs.get("format", "png"),
-                    width=kwargs.get("width", 1920),
-                    height=kwargs.get("height", 1080)
-                )
-            elif method_name == "get_objects":
-                return self.mcp_client.get_objects()
-            elif method_name == "get_object":
-                return self.mcp_client.get_object(kwargs.get("object_id"))
-            elif method_name == "get_parts_list":
-                return self.mcp_client.get_parts_list()
-            else:
-                return {"success": False, "error": f"未知的 MCPClient 方法: {method_name}"}
-
-        except Exception as e:
-            logger.error(f"调用 MCPClient 方法 {method_name} 失败: {e}")
-            return {"success": False, "error": str(e)}
+    # MCPClient 相关方法已删除
 
     def print_test_summary(self):
         """打印测试摘要"""
